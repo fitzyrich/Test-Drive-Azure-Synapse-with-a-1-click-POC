@@ -1,5 +1,5 @@
 {
-	"name": "Notebook 1",
+	"name": "CsvToParquetDelta",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6b1342e4-0605-438f-ade9-f45d9e9fead7"
+				"spark.autotune.trackingId": "22c6bc9b-e03a-4811-93b7-5013b971f23f"
 			}
 		},
 		"metadata": {
@@ -64,7 +64,7 @@
 					")\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 15
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -82,7 +82,7 @@
 				"source": [
 					"df.printSchema"
 				],
-				"execution_count": 16
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -100,7 +100,7 @@
 				"source": [
 					"df.write.parquet(path='abfss://publicparquet@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data')"
 				],
-				"execution_count": 17
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -118,9 +118,74 @@
 				"source": [
 					"from delta.tables import *\r\n",
 					"\r\n",
-					"deltaTable = DeltaTable.convertToDelta(spark, \"parquet.`abfss://publicdelta@rfia2rawl2klisuspoc.dfs.core.windows.net/`\")"
+					"deltaTable = DeltaTable.convertToDelta(spark, \"parquet.`abfss://publicdelta@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data`\")"
 				],
-				"execution_count": 18
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "python"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"df2 = spark.read.load('abfss://public@rfia2rawl2klisuspoc.dfs.core.windows.net/trip-data.csv', format='csv'\r\n",
+					"## If header exists uncomment line below\r\n",
+					", header=True\r\n",
+					")\r\n",
+					"display(df2.limit(10))"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df2.write.parquet(path='abfss://publicparquet@rfia2rawl2klisuspoc.dfs.core.windows.net/trip-data')"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from delta.tables import *\r\n",
+					"\r\n",
+					"deltaTable = DeltaTable.convertToDelta(spark, \"parquet.`abfss://publicdelta@rfia2rawl2klisuspoc.dfs.core.windows.net/trip-data`\")"
+				],
+				"execution_count": 5
 			}
 		]
 	}

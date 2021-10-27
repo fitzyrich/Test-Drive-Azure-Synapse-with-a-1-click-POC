@@ -1,8 +1,8 @@
 {
-	"name": "SQL script 4",
+	"name": "QueryDelta",
 	"properties": {
 		"content": {
-			"query": "CREATE DATABASE mydb \n    COLLATE Latin1_General_100_BIN2_UTF8;\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicparquet/fares-data/',\n        FORMAT = 'Parquet'\n    ) AS [result]\n\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/',\n        FORMAT = 'DELTA'\n    ) AS [result]\n\n\nCREATE OR ALTER VIEW nycfares\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nycfares;",
+			"query": "CREATE DATABASE mydb \n    COLLATE Latin1_General_100_BIN2_UTF8;\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicparquet/fares-data/',\n        FORMAT = 'Parquet'\n    ) AS [result]\n\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/fares-data',\n        FORMAT = 'DELTA'\n    ) AS [result]\n\n\nCREATE OR ALTER VIEW nycfares\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/fares-data',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nycfares;\n\n\nCREATE OR ALTER VIEW nyctrips\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/trip-data',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nyctrips",
 			"metadata": {
 				"language": "sql"
 			},
