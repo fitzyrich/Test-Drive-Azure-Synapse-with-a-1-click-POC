@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 4",
+	"properties": {
+		"content": {
+			"query": "CREATE DATABASE mydb \n    COLLATE Latin1_General_100_BIN2_UTF8;\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicparquet/fares-data/',\n        FORMAT = 'Parquet'\n    ) AS [result]\n\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/',\n        FORMAT = 'DELTA'\n    ) AS [result]\n\n\nCREATE OR ALTER VIEW nycfares\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nycfares;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "mydb",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
