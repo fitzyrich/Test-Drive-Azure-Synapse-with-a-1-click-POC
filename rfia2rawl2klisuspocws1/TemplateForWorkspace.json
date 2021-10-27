@@ -1296,12 +1296,12 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 4')]",
+			"name": "[concat(parameters('workspaceName'), '/QueryDelta')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "CREATE DATABASE mydb \n    COLLATE Latin1_General_100_BIN2_UTF8;\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicparquet/fares-data/',\n        FORMAT = 'Parquet'\n    ) AS [result]\n\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/',\n        FORMAT = 'DELTA'\n    ) AS [result]\n\n\nCREATE OR ALTER VIEW nycfares\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nycfares;",
+					"query": "CREATE DATABASE mydb \n    COLLATE Latin1_General_100_BIN2_UTF8;\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicparquet/fares-data/',\n        FORMAT = 'Parquet'\n    ) AS [result]\n\n\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/fares-data',\n        FORMAT = 'DELTA'\n    ) AS [result]\n\n\nCREATE OR ALTER VIEW nycfares\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/fares-data',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nycfares;\n\n\nCREATE OR ALTER VIEW nyctrips\nAS \nSELECT *\nFROM  \n    OPENROWSET(\n        BULK 'https://rfia2rawl2klisuspoc.dfs.core.windows.net/publicdelta/trip-data',\n        FORMAT='DELTA'\n    ) nyc;\n\nselect * from nyctrips",
 					"metadata": {
 						"language": "sql"
 					},
@@ -1312,6 +1312,206 @@
 					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/CsvToParquetDelta')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "ws1sparkpool1",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "22c6bc9b-e03a-4811-93b7-5013b971f23f"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/d4617e96-edba-4295-8928-11e190ac925d/resourceGroups/synapsepocrg/providers/Microsoft.Synapse/workspaces/rfia2rawl2klisuspocws1/bigDataPools/ws1sparkpool1",
+						"name": "ws1sparkpool1",
+						"type": "Spark",
+						"endpoint": "https://rfia2rawl2klisuspocws1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ws1sparkpool1",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "2.4",
+						"nodeCount": 5,
+						"cores": 8,
+						"memory": 56
+					}
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df = spark.read.load('abfss://public@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data.csv', format='csv'\r\n",
+							"## If header exists uncomment line below\r\n",
+							", header=True\r\n",
+							")\r\n",
+							"display(df.limit(10))"
+						],
+						"outputs": [],
+						"execution_count": 6
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df.printSchema"
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df.write.parquet(path='abfss://publicparquet@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data')"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from delta.tables import *\r\n",
+							"\r\n",
+							"deltaTable = DeltaTable.convertToDelta(spark, \"parquet.`abfss://publicdelta@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data`\")"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"microsoft": {
+								"language": "python"
+							},
+							"collapsed": false
+						},
+						"source": [
+							"%%pyspark\r\n",
+							"df2 = spark.read.load('abfss://public@rfia2rawl2klisuspoc.dfs.core.windows.net/trip-data.csv', format='csv'\r\n",
+							"## If header exists uncomment line below\r\n",
+							", header=True\r\n",
+							")\r\n",
+							"display(df2.limit(10))"
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df2.write.parquet(path='abfss://publicparquet@rfia2rawl2klisuspoc.dfs.core.windows.net/trip-data')"
+						],
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from delta.tables import *\r\n",
+							"\r\n",
+							"deltaTable = DeltaTable.convertToDelta(spark, \"parquet.`abfss://publicdelta@rfia2rawl2klisuspoc.dfs.core.windows.net/trip-data`\")"
+						],
+						"outputs": [],
+						"execution_count": 5
+					}
+				]
 			},
 			"dependsOn": []
 		},
@@ -1645,140 +1845,6 @@
 						],
 						"outputs": [],
 						"execution_count": null
-					}
-				]
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
-			"type": "Microsoft.Synapse/workspaces/notebooks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"nbformat": 4,
-				"nbformat_minor": 2,
-				"bigDataPool": {
-					"referenceName": "ws1sparkpool1",
-					"type": "BigDataPoolReference"
-				},
-				"sessionProperties": {
-					"driverMemory": "56g",
-					"driverCores": 8,
-					"executorMemory": "56g",
-					"executorCores": 8,
-					"numExecutors": 2,
-					"conf": {
-						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "33f76b66-d43c-4482-bdbe-752efcff2b3f"
-					}
-				},
-				"metadata": {
-					"saveOutput": true,
-					"enableDebugMode": false,
-					"kernelspec": {
-						"name": "synapse_pyspark",
-						"display_name": "Synapse PySpark"
-					},
-					"language_info": {
-						"name": "python"
-					},
-					"a365ComputeOptions": {
-						"id": "/subscriptions/d4617e96-edba-4295-8928-11e190ac925d/resourceGroups/synapsepocrg/providers/Microsoft.Synapse/workspaces/rfia2rawl2klisuspocws1/bigDataPools/ws1sparkpool1",
-						"name": "ws1sparkpool1",
-						"type": "Spark",
-						"endpoint": "https://rfia2rawl2klisuspocws1.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ws1sparkpool1",
-						"auth": {
-							"type": "AAD",
-							"authResource": "https://dev.azuresynapse.net"
-						},
-						"sparkVersion": "2.4",
-						"nodeCount": 5,
-						"cores": 8,
-						"memory": 56,
-						"automaticScaleJobs": false
-					},
-					"sessionKeepAliveTimeout": 30
-				},
-				"cells": [
-					{
-						"cell_type": "code",
-						"metadata": {
-							"microsoft": {
-								"language": "python"
-							},
-							"collapsed": false
-						},
-						"source": [
-							"%%pyspark\r\n",
-							"df = spark.read.load('abfss://public@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data.csv', format='csv'\r\n",
-							"## If header exists uncomment line below\r\n",
-							", header=True\r\n",
-							")\r\n",
-							"display(df.limit(10))"
-						],
-						"outputs": [],
-						"execution_count": 15
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"df.printSchema"
-						],
-						"outputs": [],
-						"execution_count": 16
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"df.write.parquet(path='abfss://publicparquet@rfia2rawl2klisuspoc.dfs.core.windows.net/fares-data')"
-						],
-						"outputs": [],
-						"execution_count": 17
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"from delta.tables import *\r\n",
-							"\r\n",
-							"deltaTable = DeltaTable.convertToDelta(spark, \"parquet.`abfss://publicdelta@rfia2rawl2klisuspoc.dfs.core.windows.net/`\")"
-						],
-						"outputs": [],
-						"execution_count": 18
 					}
 				]
 			},
