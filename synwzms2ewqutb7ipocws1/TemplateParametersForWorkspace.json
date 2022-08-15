@@ -19,6 +19,12 @@
 		},
 		"keyVaultLinkedservice_properties_typeProperties_baseUrl": {
 			"value": "@{concat('https://',linkedService().keyVaultName,'.vault.azure.net/')}"
+		},
+		"AzureMLService_properties_typeProperties_subscriptionId": {
+			"value": "d4617e96-edba-4295-8928-11e190ac925d"
+		},
+		"AzureMLService_properties_typeProperties_resourceGroupName": {
+			"value": "synapselinkdemorg"
 		}
 	}
 }
