@@ -3,16 +3,20 @@
 	"properties": {
 		"parameters": {
 			"SynapseWorkspaceName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "synwzms2ewqutb7ipocws1"
 			},
 			"SQLDedicatedPoolName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "synwzms2ewqutb7ipoc"
 			},
 			"keyVaultName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "kvsynwzms2ewqutb7ipoc"
 			},
 			"SQLLoginUsername": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "adminuser"
 			}
 		},
 		"annotations": [],
