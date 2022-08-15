@@ -1,0 +1,17 @@
+{
+	"name": "AzureMLService",
+	"properties": {
+		"annotations": [],
+		"type": "AzureMLService",
+		"typeProperties": {
+			"subscriptionId": "d4617e96-edba-4295-8928-11e190ac925d",
+			"resourceGroupName": "synapselinkdemorg",
+			"mlWorkspaceName": "synapsedemoaml",
+			"authentication": "MSI"
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
